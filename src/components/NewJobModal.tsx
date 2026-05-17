@@ -3,7 +3,12 @@ import { Modal } from './Modal';
 import { CustomerPicker } from './CustomerPicker';
 import { useCreateJob } from '../hooks/useJobMutations';
 import { parseDecimal } from '../lib/format';
-import type { Customer } from '../lib/types';
+import {
+  JOB_CATEGORIES,
+  JOB_CATEGORY_LABELS,
+  type Customer,
+  type JobCategory,
+} from '../lib/types';
 
 interface Props {
   onClose: () => void;
@@ -15,6 +20,7 @@ export function NewJobModal({ onClose, initialCustomer = null }: Props) {
   const [description, setDescription] = useState('');
   const [quote, setQuote] = useState('');
   const [notes, setNotes] = useState('');
+  const [category, setCategory] = useState<JobCategory | ''>('');
   const [error, setError] = useState<string | null>(null);
   const create = useCreateJob();
 
@@ -34,6 +40,7 @@ export function NewJobModal({ onClose, initialCustomer = null }: Props) {
         item_description: description.trim(),
         quote_amount: parseDecimal(quote),
         notes: notes.trim() || null,
+        category: category || null,
       });
       onClose();
     } catch (e) {
@@ -65,8 +72,26 @@ export function NewJobModal({ onClose, initialCustomer = null }: Props) {
               onChange={(e) => setDescription(e.target.value)}
               rows={2}
               placeholder="e.g. wall tent, 3 tears on rear panel"
-              className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+              className="mt-1 block w-full min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
             />
+          </label>
+
+          <label className="block">
+            <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Category
+            </span>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value as JobCategory | '')}
+              className="mt-1 block w-full min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+            >
+              <option value="">— not set —</option>
+              {JOB_CATEGORIES.map((c) => (
+                <option key={c} value={c}>
+                  {JOB_CATEGORY_LABELS[c]}
+                </option>
+              ))}
+            </select>
           </label>
 
           <label className="block">
@@ -79,7 +104,7 @@ export function NewJobModal({ onClose, initialCustomer = null }: Props) {
               value={quote}
               onChange={(e) => setQuote(e.target.value)}
               placeholder="0.00"
-              className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+              className="mt-1 block w-full min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
             />
           </label>
 
@@ -91,7 +116,7 @@ export function NewJobModal({ onClose, initialCustomer = null }: Props) {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
-              className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+              className="mt-1 block w-full min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
             />
           </label>
         </section>

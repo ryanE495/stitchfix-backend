@@ -31,6 +31,16 @@ do $$ begin
     ('intake', 'in_progress', 'finished', 'other');
 exception when duplicate_object then null; end $$;
 
+do $$ begin
+  create type stitchworks_payment_method as enum ('cash', 'check', 'card', 'other');
+exception when duplicate_object then null; end $$;
+
+do $$ begin
+  create type stitchworks_job_category as enum
+    ('canvas_tent', 'upholstery_seats', 'awning', 'pack_bag_repair',
+     'custom_build', 'leather', 'other');
+exception when duplicate_object then null; end $$;
+
 -- ---------------------------------------------------------------------------
 -- TABLES
 -- ---------------------------------------------------------------------------
@@ -62,6 +72,8 @@ create table if not exists public.stitchworks_jobs (
   followup_by       date,
   review_requested  boolean not null default false,
   review_requested_at timestamptz,
+  payment_method    stitchworks_payment_method,
+  category          stitchworks_job_category,
   created_at        timestamptz not null default now(),
   updated_at        timestamptz not null default now()
 );

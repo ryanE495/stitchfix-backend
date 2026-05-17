@@ -2,10 +2,16 @@ import { useEffect, useMemo, useState } from 'react';
 import { useJob } from '../hooks/useJobs';
 import { useAdvanceStatus, useUpdateJob } from '../hooks/useJobMutations';
 import {
+  JOB_CATEGORIES,
+  JOB_CATEGORY_LABELS,
   JOB_STATUS_LABELS,
   JOB_STATUS_ORDER,
+  PAYMENT_METHODS,
+  PAYMENT_METHOD_LABELS,
   type Job,
+  type JobCategory,
   type JobStatus,
+  type PaymentMethod,
 } from '../lib/types';
 import { parseDecimal } from '../lib/format';
 import { formatShortDate, toDateInput } from '../lib/dates';
@@ -41,6 +47,8 @@ type FormState = {
   needs_followup: boolean;
   followup_by: string;
   review_requested: boolean;
+  payment_method: PaymentMethod | '';
+  category: JobCategory | '';
 };
 
 function jobToForm(job: Job): FormState {
@@ -59,6 +67,8 @@ function jobToForm(job: Job): FormState {
     needs_followup: job.needs_followup ?? false,
     followup_by: toDateInput(job.followup_by),
     review_requested: job.review_requested ?? false,
+    payment_method: job.payment_method ?? '',
+    category: job.category ?? '',
   };
 }
 
@@ -113,6 +123,8 @@ export function JobDetailModal({ jobId, onClose }: Props) {
               ? job.review_requested_at
               : new Date().toISOString()
             : null,
+          payment_method: form.payment_method || null,
+          category: form.category || null,
         },
       });
     } catch (e) {
@@ -193,7 +205,7 @@ export function JobDetailModal({ jobId, onClose }: Props) {
               <select
                 value={form.status}
                 onChange={(e) => setField('status', e.target.value as JobStatus)}
-                className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                className="mt-1 block w-full min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
               >
                 {JOB_STATUS_ORDER.map((s) => (
                   <option key={s} value={s}>
@@ -214,8 +226,23 @@ export function JobDetailModal({ jobId, onClose }: Props) {
                 value={form.item_description}
                 onChange={(e) => setField('item_description', e.target.value)}
                 rows={2}
-                className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                className="mt-1 block w-full min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
               />
+            </label>
+            <label className="mt-3 block">
+              <span className="text-xs text-slate-500">Category</span>
+              <select
+                value={form.category}
+                onChange={(e) => setField('category', e.target.value as JobCategory | '')}
+                className="mt-1 block w-full min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+              >
+                <option value="">— not set —</option>
+                {JOB_CATEGORIES.map((c) => (
+                  <option key={c} value={c}>
+                    {JOB_CATEGORY_LABELS[c]}
+                  </option>
+                ))}
+              </select>
             </label>
           </section>
 
@@ -237,7 +264,7 @@ export function JobDetailModal({ jobId, onClose }: Props) {
                   type="date"
                   value={form.followup_by}
                   onChange={(e) => setField('followup_by', e.target.value)}
-                  className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                  className="mt-1 block w-full min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
                 />
               </label>
             )}
@@ -279,11 +306,36 @@ export function JobDetailModal({ jobId, onClose }: Props) {
                   type="date"
                   value={form[key]}
                   onChange={(e) => setField(key, e.target.value)}
-                  className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                  className="mt-1 block w-full min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
                 />
               </label>
             ))}
           </section>
+
+          {/* Payment method — only when job is paid or has a paid date */}
+          {(form.status === 'paid_closed' || form.date_paid) && (
+            <section>
+              <label className="block">
+                <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Payment method
+                </span>
+                <select
+                  value={form.payment_method}
+                  onChange={(e) =>
+                    setField('payment_method', e.target.value as PaymentMethod | '')
+                  }
+                  className="mt-1 block w-full min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                >
+                  <option value="">— not set —</option>
+                  {PAYMENT_METHODS.map((m) => (
+                    <option key={m} value={m}>
+                      {PAYMENT_METHOD_LABELS[m]}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </section>
+          )}
 
           {/* Money */}
           <section className="grid grid-cols-2 gap-3">
@@ -303,7 +355,7 @@ export function JobDetailModal({ jobId, onClose }: Props) {
                   value={form[key]}
                   placeholder={ph}
                   onChange={(e) => setField(key, e.target.value)}
-                  className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                  className="mt-1 block w-full min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
                 />
               </label>
             ))}
@@ -319,7 +371,7 @@ export function JobDetailModal({ jobId, onClose }: Props) {
                 value={form.notes}
                 onChange={(e) => setField('notes', e.target.value)}
                 rows={3}
-                className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                className="mt-1 block w-full min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
               />
             </label>
           </section>

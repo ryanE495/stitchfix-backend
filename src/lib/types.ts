@@ -14,6 +14,46 @@ export type JobStatus =
   | 'complete_awaiting_pickup'
   | 'paid_closed';
 
+export type PaymentMethod = 'cash' | 'check' | 'card' | 'other';
+
+export const PAYMENT_METHODS: PaymentMethod[] = ['cash', 'check', 'card', 'other'];
+
+export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
+  cash: 'Cash',
+  check: 'Check',
+  card: 'Card',
+  other: 'Other',
+};
+
+export type JobCategory =
+  | 'canvas_tent'
+  | 'upholstery_seats'
+  | 'awning'
+  | 'pack_bag_repair'
+  | 'custom_build'
+  | 'leather'
+  | 'other';
+
+export const JOB_CATEGORIES: JobCategory[] = [
+  'canvas_tent',
+  'upholstery_seats',
+  'awning',
+  'pack_bag_repair',
+  'custom_build',
+  'leather',
+  'other',
+];
+
+export const JOB_CATEGORY_LABELS: Record<JobCategory, string> = {
+  canvas_tent: 'Canvas Tent',
+  upholstery_seats: 'Upholstery / Seats',
+  awning: 'Awning',
+  pack_bag_repair: 'Pack / Bag Repair',
+  custom_build: 'Custom Build',
+  leather: 'Leather',
+  other: 'Other',
+};
+
 export interface Customer {
   id: string;
   name: string;
@@ -42,6 +82,8 @@ export interface Job {
   followup_by: string | null;
   review_requested: boolean;
   review_requested_at: string | null;
+  payment_method: PaymentMethod | null;
+  category: JobCategory | null;
   created_at: string;
   updated_at: string;
 }

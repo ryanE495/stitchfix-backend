@@ -45,7 +45,7 @@ export function CustomerDetailPage() {
                 <button
                   type="button"
                   onClick={() => setNewJobOpen(true)}
-                  className="ml-auto min-h-[40px] rounded-lg bg-brand-700 px-3 py-2 text-sm font-medium text-white hover:bg-brand-800"
+                  className="ml-auto min-h-[44px] rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-800"
                 >
                   + New job
                 </button>
@@ -195,7 +195,7 @@ function CustomerInfoCard({ customer }: { customer: Customer }) {
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="min-h-[40px] rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            className="min-h-[44px] rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
           >
             Edit
           </button>
@@ -210,7 +210,7 @@ function CustomerInfoCard({ customer }: { customer: Customer }) {
         placeholder="Name *"
         value={form.name}
         onChange={(e) => setForm({ ...form, name: e.target.value })}
-        className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+        className="block w-full min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
       />
       <input
         placeholder="Phone"
@@ -218,14 +218,14 @@ function CustomerInfoCard({ customer }: { customer: Customer }) {
         inputMode="tel"
         value={form.phone}
         onChange={(e) => setForm({ ...form, phone: e.target.value })}
-        className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+        className="block w-full min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
       />
       <select
         value={form.contact_source}
         onChange={(e) =>
           setForm({ ...form, contact_source: e.target.value as ContactSource })
         }
-        className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+        className="block w-full min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
       >
         {CONTACT_SOURCES.map((s) => (
           <option key={s} value={s}>
@@ -233,18 +233,24 @@ function CustomerInfoCard({ customer }: { customer: Customer }) {
           </option>
         ))}
       </select>
-      <input
-        placeholder="Facebook / contact handle"
-        value={form.contact_handle}
-        onChange={(e) => setForm({ ...form, contact_handle: e.target.value })}
-        className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
-      />
+      <label className="block">
+        <span className="text-xs font-medium text-slate-600">Contact handle (optional)</span>
+        <input
+          placeholder="e.g. Facebook name, Instagram handle, alternate contact"
+          value={form.contact_handle}
+          onChange={(e) => setForm({ ...form, contact_handle: e.target.value })}
+          className="mt-1 block w-full min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+        />
+        <span className="mt-1 block text-[11px] leading-snug text-slate-500">
+          How you found them or how they prefer to be contacted, if different from their real name.
+        </span>
+      </label>
       <textarea
         placeholder="Notes"
         rows={3}
         value={form.notes}
         onChange={(e) => setForm({ ...form, notes: e.target.value })}
-        className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+        className="block w-full min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
       />
       {err && <p className="text-sm text-rust-700">{err}</p>}
       <div className="flex gap-2">

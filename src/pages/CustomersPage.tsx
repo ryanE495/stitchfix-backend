@@ -31,7 +31,7 @@ export function CustomersPage() {
           placeholder="Search by name or phone"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+          className="block w-full min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
         />
       </div>
       <main className="flex-1 overflow-y-auto">
@@ -119,7 +119,7 @@ function NewCustomerModal({ onClose }: { onClose: () => void }) {
           placeholder="Name *"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+          className="block w-full min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
         />
         <input
           placeholder="Phone"
@@ -127,12 +127,12 @@ function NewCustomerModal({ onClose }: { onClose: () => void }) {
           inputMode="tel"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
-          className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+          className="block w-full min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
         />
         <select
           value={source}
           onChange={(e) => setSource(e.target.value as ContactSource)}
-          className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+          className="block w-full min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
         >
           {CONTACT_SOURCES.map((s) => (
             <option key={s} value={s}>
@@ -140,18 +140,24 @@ function NewCustomerModal({ onClose }: { onClose: () => void }) {
             </option>
           ))}
         </select>
-        <input
-          placeholder="Facebook / contact handle (optional)"
-          value={handle}
-          onChange={(e) => setHandle(e.target.value)}
-          className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
-        />
+        <label className="block">
+          <span className="text-xs font-medium text-slate-600">Contact handle (optional)</span>
+          <input
+            placeholder="e.g. Facebook name, Instagram handle, alternate contact"
+            value={handle}
+            onChange={(e) => setHandle(e.target.value)}
+            className="mt-1 block w-full min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+          />
+          <span className="mt-1 block text-[11px] leading-snug text-slate-500">
+            How you found them or how they prefer to be contacted, if different from their real name.
+          </span>
+        </label>
         <textarea
           placeholder="Notes (optional)"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={2}
-          className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+          className="block w-full min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
         />
         {err && <p className="text-sm text-rust-700">{err}</p>}
         <div className="sticky bottom-0 -mx-4 -mb-4 flex gap-2 border-t border-slate-200 bg-white px-4 py-3">

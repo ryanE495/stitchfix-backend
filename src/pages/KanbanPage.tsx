@@ -110,7 +110,12 @@ export function KanbanPage() {
     if (target === 'in_shop' && !activeJ.date_received) patch.date_received = today;
     if (target === 'complete_awaiting_pickup' && !activeJ.date_completed)
       patch.date_completed = today;
-    if (target === 'paid_closed' && !activeJ.date_paid) patch.date_paid = today;
+    if (target === 'paid_closed') {
+      if (!activeJ.date_paid) patch.date_paid = today;
+      if (activeJ.actual_charged == null && activeJ.quote_amount != null) {
+        patch.actual_charged = activeJ.quote_amount;
+      }
+    }
 
     update.mutate({ id: activeJ.id, patch });
   };

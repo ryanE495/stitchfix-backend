@@ -21,6 +21,8 @@ type JobPatch = Partial<
     | 'followup_by'
     | 'review_requested'
     | 'review_requested_at'
+    | 'payment_method'
+    | 'category'
   >
 >;
 
@@ -61,19 +63,35 @@ export function useUpdateJob() {
   });
 }
 
+type AdvanceJob = Pick<
+  Job,
+  | 'id'
+  | 'status'
+  | 'date_received'
+  | 'date_completed'
+  | 'date_paid'
+  | 'quote_amount'
+  | 'actual_charged'
+>;
+
 export function useAdvanceStatus() {
   const update = useUpdateJob();
-  return (job: Pick<Job, 'id' | 'status'>, next: JobStatus) => {
+  return (job: AdvanceJob, next: JobStatus) => {
     const today = new Date().toISOString().slice(0, 10);
     const patch: JobPatch = { status: next };
-    if (next === 'in_shop' && !('date_received' in patch)) {
+    if (next === 'in_shop' && !job.date_received) {
       patch.date_received = today;
     }
-    if (next === 'complete_awaiting_pickup') {
+    if (next === 'complete_awaiting_pickup' && !job.date_completed) {
       patch.date_completed = today;
     }
     if (next === 'paid_closed') {
-      patch.date_paid = today;
+      if (!job.date_paid) patch.date_paid = today;
+      // Default actual charged to the quoted amount so "Paid this month" picks it up.
+      // User can still override via the modal.
+      if (job.actual_charged == null && job.quote_amount != null) {
+        patch.actual_charged = job.quote_amount;
+      }
     }
     return update.mutateAsync({ id: job.id, patch });
   };
@@ -87,6 +105,7 @@ export function useCreateJob() {
       item_description: string;
       quote_amount?: number | null;
       notes?: string | null;
+      category?: Job['category'];
     }) => {
       const { data, error } = await supabase
         .from('stitchworks_jobs')
@@ -95,6 +114,7 @@ export function useCreateJob() {
           item_description: input.item_description,
           quote_amount: input.quote_amount ?? null,
           notes: input.notes ?? null,
+          category: input.category ?? null,
           status: 'quoted',
         })
         .select('*, customer:stitchworks_customers(*)')

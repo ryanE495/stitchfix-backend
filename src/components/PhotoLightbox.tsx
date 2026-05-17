@@ -78,7 +78,7 @@ export function PhotoLightbox({ jobId, photos, startIndex, onClose }: Props) {
           <select
             value={photo.category}
             onChange={onChangeCategory}
-            className="ml-auto min-h-[40px] rounded-lg border border-white/30 bg-black/60 px-3 py-2 text-sm text-white"
+            className="ml-auto min-h-[44px] rounded-lg border border-white/30 bg-black/60 px-3 py-2 text-sm text-white"
           >
             {PHOTO_CATEGORIES.map((c) => (
               <option key={c} value={c} className="bg-black text-white">

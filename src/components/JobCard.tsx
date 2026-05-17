@@ -1,6 +1,6 @@
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import type { JobWithCustomer } from '../lib/types';
+import { JOB_CATEGORY_LABELS, type JobWithCustomer } from '../lib/types';
 import { ageBadgeTone, daysSince, isFollowupOverdue } from '../lib/dates';
 import { formatCurrency } from '../lib/format';
 
@@ -60,6 +60,13 @@ export function JobCardView({ job, onClick, dragging, asOverlay }: ViewProps) {
           </span>
         </div>
       </div>
+      {job.category && (
+        <p className="mt-1">
+          <span className="inline-block rounded bg-slate-200/70 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-600">
+            {JOB_CATEGORY_LABELS[job.category]}
+          </span>
+        </p>
+      )}
       <p className="mt-1 text-sm text-slate-600 line-clamp-2 leading-snug">
         {job.item_description}
       </p>

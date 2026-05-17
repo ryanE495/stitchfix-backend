@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { KanbanPage } from './pages/KanbanPage';
 import { CustomersPage } from './pages/CustomersPage';
 import { CustomerDetailPage } from './pages/CustomerDetailPage';
+import { NumbersPage } from './pages/NumbersPage';
 
 export default function App() {
   return (
@@ -10,6 +11,7 @@ export default function App() {
         <Route path="/" element={<KanbanPage />} />
         <Route path="/customers" element={<CustomersPage />} />
         <Route path="/customers/:id" element={<CustomerDetailPage />} />
+        <Route path="/numbers" element={<NumbersPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

@@ -100,7 +100,7 @@ export function CustomerPicker({ selected, onSelect, onClear }: Props) {
           placeholder="Name *"
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
-          className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+          className="block w-full min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
         />
         <input
           placeholder="Phone"
@@ -108,12 +108,12 @@ export function CustomerPicker({ selected, onSelect, onClear }: Props) {
           inputMode="tel"
           value={newPhone}
           onChange={(e) => setNewPhone(e.target.value)}
-          className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+          className="block w-full min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
         />
         <select
           value={newSource}
           onChange={(e) => setNewSource(e.target.value as ContactSource)}
-          className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+          className="block w-full min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
         >
           {CONTACT_SOURCES.map((s) => (
             <option key={s} value={s}>
@@ -121,18 +121,24 @@ export function CustomerPicker({ selected, onSelect, onClear }: Props) {
             </option>
           ))}
         </select>
-        <input
-          placeholder="Facebook / contact handle (optional)"
-          value={newHandle}
-          onChange={(e) => setNewHandle(e.target.value)}
-          className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
-        />
+        <label className="block">
+          <span className="text-xs font-medium text-slate-600">Contact handle (optional)</span>
+          <input
+            placeholder="e.g. Facebook name, Instagram handle, alternate contact"
+            value={newHandle}
+            onChange={(e) => setNewHandle(e.target.value)}
+            className="mt-1 block w-full min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+          />
+          <span className="mt-1 block text-[11px] leading-snug text-slate-500">
+            How you found them or how they prefer to be contacted, if different from their real name.
+          </span>
+        </label>
         <textarea
           placeholder="Notes (optional)"
           value={newNotes}
           onChange={(e) => setNewNotes(e.target.value)}
           rows={2}
-          className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+          className="block w-full min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
         />
         {createErr && <p className="text-xs text-rust-700">{createErr}</p>}
         <button
@@ -154,7 +160,7 @@ export function CustomerPicker({ selected, onSelect, onClear }: Props) {
         placeholder="Search by name or phone"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+        className="block w-full min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
       />
       <div className="max-h-56 overflow-y-auto rounded-lg border border-slate-200">
         {matches.length === 0 ? (
@@ -178,7 +184,7 @@ export function CustomerPicker({ selected, onSelect, onClear }: Props) {
       <button
         type="button"
         onClick={() => setMode('new')}
-        className="min-h-[40px] w-full rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+        className="min-h-[44px] w-full rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
       >
         + Add new customer
       </button>
