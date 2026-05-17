@@ -84,12 +84,6 @@ export interface Job {
   review_requested_at: string | null;
   payment_method: PaymentMethod | null;
   category: JobCategory | null;
-  feature_in_portfolio: boolean;
-  portfolio_title: string | null;
-  portfolio_slug: string | null;
-  portfolio_blurb: string | null;
-  portfolio_location: string | null;
-  portfolio_published_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -157,3 +151,50 @@ export const CONTACT_SOURCE_LABELS: Record<ContactSource, string> = {
   google: 'Google',
   other: 'Other',
 };
+
+export type PortfolioStatus = 'draft' | 'published';
+
+export const PORTFOLIO_STATUSES: PortfolioStatus[] = ['draft', 'published'];
+export const PORTFOLIO_STATUS_LABELS: Record<PortfolioStatus, string> = {
+  draft: 'Draft',
+  published: 'Published',
+};
+
+export interface PortfolioItem {
+  id: string;
+  title: string;
+  category: JobCategory | null;
+  description: string;
+  materials_techniques: string[];
+  approach: string | null;
+  challenge: string | null;
+  detail_1_label: string | null;
+  detail_1_value: string | null;
+  detail_2_label: string | null;
+  detail_2_value: string | null;
+  detail_3_label: string | null;
+  detail_3_value: string | null;
+  before_image_url: string | null;
+  after_image_url: string | null;
+  before_storage_path: string | null;
+  after_storage_path: string | null;
+  display_order: number;
+  status: PortfolioStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export const COMMON_PORTFOLIO_TAGS = [
+  'Canvas',
+  'Heavy Vinyl',
+  'Cordura',
+  'Webbing',
+  'Walking Foot Machine',
+  'Hand-Stitched',
+  'Machine-Stitched',
+  'UV Thread',
+  'Leather',
+  'Wool Felt',
+  'Grommets',
+  'Zipper Replacement',
+];

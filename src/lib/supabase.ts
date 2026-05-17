@@ -12,3 +12,4 @@ if (!url || !anonKey) {
 export const supabase = createClient(url, anonKey);
 
 export const PHOTOS_BUCKET = 'stitchworks-job-photos';
+export const PORTFOLIO_IMAGES_BUCKET = 'stitchworks-portfolio-images';

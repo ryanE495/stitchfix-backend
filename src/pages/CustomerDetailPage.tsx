@@ -25,7 +25,7 @@ export function CustomerDetailPage() {
 
   return (
     <div className="flex h-full flex-col">
-      <TopNav view="customers" />
+      <TopNav title="Customer" />
       <main className="flex-1 overflow-y-auto px-3 py-4 sm:px-5">
         <Link
           to="/customers"

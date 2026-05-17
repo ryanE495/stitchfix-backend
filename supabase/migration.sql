@@ -74,55 +74,9 @@ create table if not exists public.stitchworks_jobs (
   review_requested_at timestamptz,
   payment_method    stitchworks_payment_method,
   category          stitchworks_job_category,
-  feature_in_portfolio   boolean not null default false,
-  portfolio_title        text,
-  portfolio_slug         text,
-  portfolio_blurb        text,
-  portfolio_location     text,
-  portfolio_published_at timestamptz,
   created_at        timestamptz not null default now(),
   updated_at        timestamptz not null default now()
 );
-
-create unique index if not exists stitchworks_jobs_portfolio_slug_idx
-  on public.stitchworks_jobs (portfolio_slug);
-
-create index if not exists stitchworks_jobs_portfolio_published_idx
-  on public.stitchworks_jobs (portfolio_published_at desc)
-  where feature_in_portfolio = true;
-
--- Public portfolio view (anon-safe whitelist)
-create or replace view public.stitchworks_public_portfolio as
-select
-  j.portfolio_title,
-  j.portfolio_slug,
-  j.portfolio_blurb,
-  j.portfolio_location,
-  j.portfolio_published_at,
-  j.category,
-  j.item_description,
-  coalesce(
-    (
-      select jsonb_agg(
-        jsonb_build_object('photo_url', p.photo_url, 'category', p.category)
-        order by
-          case p.category
-            when 'intake' then 1
-            when 'in_progress' then 2
-            when 'finished' then 3
-            else 4
-          end,
-          p.created_at
-      )
-      from public.stitchworks_job_photos p
-      where p.job_id = j.id
-    ),
-    '[]'::jsonb
-  ) as photos
-from public.stitchworks_jobs j
-where j.feature_in_portfolio = true;
-
-grant select on public.stitchworks_public_portfolio to anon, authenticated;
 
 create index if not exists stitchworks_jobs_customer_id_idx
   on public.stitchworks_jobs(customer_id);
@@ -207,5 +161,78 @@ create policy stitchworks_job_photos_update on storage.objects
 create policy stitchworks_job_photos_delete on storage.objects
   for delete to anon, authenticated
   using (bucket_id = 'stitchworks-job-photos');
+
+-- ---------------------------------------------------------------------------
+-- PORTFOLIO CMS (standalone table; not linked to jobs)
+-- ---------------------------------------------------------------------------
+do $$ begin
+  create type stitchworks_portfolio_status as enum ('draft', 'published');
+exception when duplicate_object then null; end $$;
+
+create table if not exists public.stitchworks_portfolio_items (
+  id                    uuid primary key default gen_random_uuid(),
+  title                 text not null,
+  category              stitchworks_job_category,
+  description           text not null,
+  materials_techniques  text[] not null default '{}',
+  approach              text,
+  challenge             text,
+  detail_1_label        text,
+  detail_1_value        text,
+  detail_2_label        text,
+  detail_2_value        text,
+  detail_3_label        text,
+  detail_3_value        text,
+  before_image_url      text,
+  after_image_url       text,
+  before_storage_path   text,
+  after_storage_path    text,
+  display_order         integer not null default 0,
+  status                stitchworks_portfolio_status not null default 'draft',
+  created_at            timestamptz not null default now(),
+  updated_at            timestamptz not null default now()
+);
+
+create index if not exists stitchworks_portfolio_items_order_idx
+  on public.stitchworks_portfolio_items (display_order, created_at desc);
+
+create index if not exists stitchworks_portfolio_items_published_idx
+  on public.stitchworks_portfolio_items (display_order)
+  where status = 'published';
+
+drop trigger if exists stitchworks_portfolio_items_set_updated_at on public.stitchworks_portfolio_items;
+create trigger stitchworks_portfolio_items_set_updated_at
+  before update on public.stitchworks_portfolio_items
+  for each row execute function public.stitchworks_set_updated_at();
+
+alter table public.stitchworks_portfolio_items enable row level security;
+drop policy if exists stitchworks_portfolio_items_open on public.stitchworks_portfolio_items;
+create policy stitchworks_portfolio_items_open on public.stitchworks_portfolio_items
+  for all to anon, authenticated using (true) with check (true);
+
+insert into storage.buckets (id, name, public)
+values ('stitchworks-portfolio-images', 'stitchworks-portfolio-images', true)
+on conflict (id) do update set public = excluded.public;
+
+drop policy if exists stitchworks_portfolio_images_read   on storage.objects;
+drop policy if exists stitchworks_portfolio_images_insert on storage.objects;
+drop policy if exists stitchworks_portfolio_images_update on storage.objects;
+drop policy if exists stitchworks_portfolio_images_delete on storage.objects;
+
+create policy stitchworks_portfolio_images_read on storage.objects
+  for select to anon, authenticated
+  using (bucket_id = 'stitchworks-portfolio-images');
+
+create policy stitchworks_portfolio_images_insert on storage.objects
+  for insert to anon, authenticated
+  with check (bucket_id = 'stitchworks-portfolio-images');
+
+create policy stitchworks_portfolio_images_update on storage.objects
+  for update to anon, authenticated
+  using (bucket_id = 'stitchworks-portfolio-images');
+
+create policy stitchworks_portfolio_images_delete on storage.objects
+  for delete to anon, authenticated
+  using (bucket_id = 'stitchworks-portfolio-images');
 
 commit;

@@ -183,9 +183,17 @@ export function KanbanPage() {
   return (
     <div className="flex h-full flex-col">
       <TopNav
-        view="kanban"
-        onNewJob={() => setNewJobOpen(true)}
+        title="Dashboard"
         extras={filterDropdown}
+        action={
+          <button
+            type="button"
+            onClick={() => setNewJobOpen(true)}
+            className="min-h-[44px] rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-800 active:scale-[0.99]"
+          >
+            + New Job
+          </button>
+        }
       />
       <PipelineSummary jobs={visibleJobs} />
       <main className="flex-1 overflow-hidden">

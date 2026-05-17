@@ -24,7 +24,18 @@ export function CustomersPage() {
 
   return (
     <div className="flex h-full flex-col">
-      <TopNav view="customers" onNewCustomer={() => setNewOpen(true)} />
+      <TopNav
+        title="Customers"
+        action={
+          <button
+            type="button"
+            onClick={() => setNewOpen(true)}
+            className="min-h-[44px] rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-800 active:scale-[0.99]"
+          >
+            + New Customer
+          </button>
+        }
+      />
       <div className="border-b border-slate-200 bg-white px-3 py-2 sm:px-5">
         <input
           type="search"

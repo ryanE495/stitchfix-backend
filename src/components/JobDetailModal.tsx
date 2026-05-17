@@ -15,7 +15,6 @@ import {
 } from '../lib/types';
 import { parseDecimal } from '../lib/format';
 import { formatShortDate, toDateInput } from '../lib/dates';
-import { slugify } from '../lib/slugify';
 import { Modal } from './Modal';
 import { PhotoStrip } from './PhotoStrip';
 import { PhoneActions } from './PhoneActions';
@@ -50,11 +49,6 @@ type FormState = {
   review_requested: boolean;
   payment_method: PaymentMethod | '';
   category: JobCategory | '';
-  feature_in_portfolio: boolean;
-  portfolio_title: string;
-  portfolio_slug: string;
-  portfolio_blurb: string;
-  portfolio_location: string;
 };
 
 function jobToForm(job: Job): FormState {
@@ -75,11 +69,6 @@ function jobToForm(job: Job): FormState {
     review_requested: job.review_requested ?? false,
     payment_method: job.payment_method ?? '',
     category: job.category ?? '',
-    feature_in_portfolio: job.feature_in_portfolio ?? false,
-    portfolio_title: job.portfolio_title ?? '',
-    portfolio_slug: job.portfolio_slug ?? '',
-    portfolio_blurb: job.portfolio_blurb ?? '',
-    portfolio_location: job.portfolio_location ?? '',
   };
 }
 
@@ -136,16 +125,6 @@ export function JobDetailModal({ jobId, onClose }: Props) {
             : null,
           payment_method: form.payment_method || null,
           category: form.category || null,
-          feature_in_portfolio: form.feature_in_portfolio,
-          portfolio_title: form.portfolio_title.trim() || null,
-          portfolio_slug: form.portfolio_slug.trim() || null,
-          portfolio_blurb: form.portfolio_blurb.trim() || null,
-          portfolio_location: form.portfolio_location.trim() || null,
-          // Stamp first-published time when transitioning to featured;
-          // preserve it across toggles otherwise. Don't clear on un-feature.
-          portfolio_published_at: form.feature_in_portfolio
-            ? job.portfolio_published_at ?? new Date().toISOString()
-            : job.portfolio_published_at,
         },
       });
     } catch (e) {
@@ -380,86 +359,6 @@ export function JobDetailModal({ jobId, onClose }: Props) {
                 />
               </label>
             ))}
-          </section>
-
-          {/* Portfolio CMS */}
-          <section>
-            <label className="flex items-center gap-2 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={form.feature_in_portfolio}
-                onChange={(e) => setField('feature_in_portfolio', e.target.checked)}
-                className="h-4 w-4 rounded border-slate-300 text-brand-700 focus:ring-brand-600"
-              />
-              <span className="text-sm font-medium text-slate-700">
-                Feature in public portfolio
-              </span>
-            </label>
-            {form.feature_in_portfolio && (
-              <div className="mt-3 space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
-                <label className="block">
-                  <span className="text-xs text-slate-500">Portfolio title</span>
-                  <input
-                    type="text"
-                    value={form.portfolio_title}
-                    onChange={(e) => setField('portfolio_title', e.target.value)}
-                    placeholder="Wall Tent Repair — Three-Tear Restoration"
-                    className="mt-1 block w-full min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
-                  />
-                </label>
-                <label className="block">
-                  <span className="text-xs text-slate-500">URL slug</span>
-                  <div className="mt-1 flex gap-2">
-                    <input
-                      type="text"
-                      value={form.portfolio_slug}
-                      onChange={(e) => setField('portfolio_slug', e.target.value)}
-                      placeholder="wall-tent-three-tear-restoration"
-                      className="block w-full min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-mono"
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setField('portfolio_slug', slugify(form.portfolio_title))
-                      }
-                      disabled={!form.portfolio_title.trim()}
-                      title="Generate slug from title"
-                      className="min-h-[44px] shrink-0 rounded-lg border border-slate-300 bg-white px-3 text-xs font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50"
-                    >
-                      From title
-                    </button>
-                  </div>
-                  <span className="mt-1 block text-[11px] text-slate-500">
-                    Lowercase letters, numbers, and dashes only. Used as the public URL.
-                  </span>
-                </label>
-                <label className="block">
-                  <span className="text-xs text-slate-500">Location</span>
-                  <input
-                    type="text"
-                    value={form.portfolio_location}
-                    onChange={(e) => setField('portfolio_location', e.target.value)}
-                    placeholder="Montrose, CO"
-                    className="mt-1 block w-full min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
-                  />
-                </label>
-                <label className="block">
-                  <span className="text-xs text-slate-500">Blurb (2–4 sentences)</span>
-                  <textarea
-                    value={form.portfolio_blurb}
-                    onChange={(e) => setField('portfolio_blurb', e.target.value)}
-                    rows={4}
-                    placeholder="What was wrong, what you did, how it turned out."
-                    className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
-                  />
-                </label>
-                {job.portfolio_published_at && (
-                  <p className="text-xs text-slate-500">
-                    First published {formatShortDate(job.portfolio_published_at)}
-                  </p>
-                )}
-              </div>
-            )}
           </section>
 
           {/* Notes */}

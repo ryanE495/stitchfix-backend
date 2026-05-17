@@ -23,12 +23,6 @@ type JobPatch = Partial<
     | 'review_requested_at'
     | 'payment_method'
     | 'category'
-    | 'feature_in_portfolio'
-    | 'portfolio_title'
-    | 'portfolio_slug'
-    | 'portfolio_blurb'
-    | 'portfolio_location'
-    | 'portfolio_published_at'
   >
 >;
 
