@@ -84,6 +84,12 @@ export interface Job {
   review_requested_at: string | null;
   payment_method: PaymentMethod | null;
   category: JobCategory | null;
+  feature_in_portfolio: boolean;
+  portfolio_title: string | null;
+  portfolio_slug: string | null;
+  portfolio_blurb: string | null;
+  portfolio_location: string | null;
+  portfolio_published_at: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -74,9 +74,55 @@ create table if not exists public.stitchworks_jobs (
   review_requested_at timestamptz,
   payment_method    stitchworks_payment_method,
   category          stitchworks_job_category,
+  feature_in_portfolio   boolean not null default false,
+  portfolio_title        text,
+  portfolio_slug         text,
+  portfolio_blurb        text,
+  portfolio_location     text,
+  portfolio_published_at timestamptz,
   created_at        timestamptz not null default now(),
   updated_at        timestamptz not null default now()
 );
+
+create unique index if not exists stitchworks_jobs_portfolio_slug_idx
+  on public.stitchworks_jobs (portfolio_slug);
+
+create index if not exists stitchworks_jobs_portfolio_published_idx
+  on public.stitchworks_jobs (portfolio_published_at desc)
+  where feature_in_portfolio = true;
+
+-- Public portfolio view (anon-safe whitelist)
+create or replace view public.stitchworks_public_portfolio as
+select
+  j.portfolio_title,
+  j.portfolio_slug,
+  j.portfolio_blurb,
+  j.portfolio_location,
+  j.portfolio_published_at,
+  j.category,
+  j.item_description,
+  coalesce(
+    (
+      select jsonb_agg(
+        jsonb_build_object('photo_url', p.photo_url, 'category', p.category)
+        order by
+          case p.category
+            when 'intake' then 1
+            when 'in_progress' then 2
+            when 'finished' then 3
+            else 4
+          end,
+          p.created_at
+      )
+      from public.stitchworks_job_photos p
+      where p.job_id = j.id
+    ),
+    '[]'::jsonb
+  ) as photos
+from public.stitchworks_jobs j
+where j.feature_in_portfolio = true;
+
+grant select on public.stitchworks_public_portfolio to anon, authenticated;
 
 create index if not exists stitchworks_jobs_customer_id_idx
   on public.stitchworks_jobs(customer_id);
