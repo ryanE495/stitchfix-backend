@@ -21,7 +21,8 @@ export function PipelineSummary({ jobs }: Props) {
     let paidThisMonth = 0;
 
     for (const j of jobs) {
-      if (j.status !== 'paid_closed') {
+      // Exclude lost jobs from "active" counts (they didn't pan out, not in the pipeline).
+      if (j.status !== 'paid_closed' && j.status !== 'lost') {
         active += 1;
         if (j.quote_amount != null) activePipeline += Number(j.quote_amount);
       }

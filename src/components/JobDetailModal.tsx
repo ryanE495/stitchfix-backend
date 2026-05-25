@@ -199,6 +199,15 @@ export function JobDetailModal({ jobId, onClose }: Props) {
                   Mark paid
                 </button>
               )}
+              {job.status !== 'paid_closed' && job.status !== 'lost' && (
+                <button
+                  type="button"
+                  onClick={() => onAdvance('lost')}
+                  className="min-h-[44px] rounded-lg border border-rust-300 px-3 py-2 text-sm font-medium text-rust-700 hover:bg-rust-50"
+                >
+                  Mark lost
+                </button>
+              )}
             </div>
             <div className="mt-2">
               <label className="text-xs text-slate-500">Override status</label>

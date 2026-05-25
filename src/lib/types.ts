@@ -7,6 +7,7 @@ export type ContactSource =
   | 'other';
 
 export type JobStatus =
+  | 'lost'
   | 'quoted'
   | 'awaiting_dropoff'
   | 'in_shop'
@@ -117,6 +118,7 @@ export const PHOTO_CATEGORY_LABELS: Record<PhotoCategory, string> = {
 export type JobWithCustomer = Job & { customer: Customer };
 
 export const JOB_STATUS_ORDER: JobStatus[] = [
+  'lost',
   'quoted',
   'awaiting_dropoff',
   'in_shop',
@@ -126,6 +128,7 @@ export const JOB_STATUS_ORDER: JobStatus[] = [
 ];
 
 export const JOB_STATUS_LABELS: Record<JobStatus, string> = {
+  lost: 'Lost',
   quoted: 'Quoted',
   awaiting_dropoff: 'Awaiting Drop-off',
   in_shop: 'In Shop',

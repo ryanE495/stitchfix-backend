@@ -35,6 +35,7 @@ const PAID_UNREVIEWED_KEY = 'stitchworks.kanban.paidUnreviewedOnly';
 
 function groupByStatus(jobs: JobWithCustomer[]): Record<JobStatus, JobWithCustomer[]> {
   const base: Record<JobStatus, JobWithCustomer[]> = {
+    lost: [],
     quoted: [],
     awaiting_dropoff: [],
     in_shop: [],
@@ -142,7 +143,7 @@ export function KanbanPage() {
 
   const board = (
     <div className="h-full overflow-x-auto snap-x snap-mandatory md:snap-none">
-      <div className="flex h-full gap-3 px-3 py-3 md:grid md:grid-cols-6 md:px-5">
+      <div className="flex h-full gap-3 px-3 py-3 md:grid md:grid-cols-7 md:px-5">
         {JOB_STATUS_ORDER.map((status) => (
           <KanbanColumn
             key={status}

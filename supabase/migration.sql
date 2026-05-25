@@ -22,7 +22,7 @@ exception when duplicate_object then null; end $$;
 
 do $$ begin
   create type stitchworks_job_status as enum
-    ('quoted', 'awaiting_dropoff', 'in_shop', 'in_progress',
+    ('lost', 'quoted', 'awaiting_dropoff', 'in_shop', 'in_progress',
      'complete_awaiting_pickup', 'paid_closed');
 exception when duplicate_object then null; end $$;
 
