@@ -11,6 +11,9 @@ import {
   type PaymentMethod,
 } from '../lib/types';
 import { formatCurrency } from '../lib/format';
+import { downloadCsv } from '../lib/csv';
+import { MonthlyTrendChart, type MonthPoint } from '../components/MonthlyTrendChart';
+import { SourceBreakdownChart } from '../components/SourceBreakdownChart';
 
 type TimeRange = 'this_month' | 'last_month' | 'last_90_days' | 'all_time';
 
@@ -151,6 +154,72 @@ export function NumbersPage() {
       .sort((a, b) => b.charged - a.charged);
   }, [paidJobs]);
 
+  // Monthly trend: last 12 calendar months of paid jobs, independent of the range filter.
+  const monthly = useMemo(() => {
+    const map = new Map<string, { charged: number; materials: number; hours: number; count: number }>();
+    for (const j of jobs) {
+      if (j.status !== 'paid_closed' || !j.date_paid) continue;
+      const key = j.date_paid.slice(0, 7);
+      const row = map.get(key) ?? { charged: 0, materials: 0, hours: 0, count: 0 };
+      row.count += 1;
+      if (j.actual_charged != null) row.charged += Number(j.actual_charged);
+      if (j.materials_cost != null) row.materials += Number(j.materials_cost);
+      if (j.hours_worked != null) row.hours += Number(j.hours_worked);
+      map.set(key, row);
+    }
+    const now = new Date();
+    const out: (MonthPoint & { materials: number; hours: number })[] = [];
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const v = map.get(key) ?? { charged: 0, materials: 0, hours: 0, count: 0 };
+      out.push({
+        key,
+        label: d.toLocaleString('en-US', { month: 'short' }),
+        labelWithYear: d.toLocaleString('en-US', { month: 'short', year: 'numeric' }),
+        charged: v.charged,
+        netProfit: v.charged - v.materials,
+        materials: v.materials,
+        hours: v.hours,
+        count: v.count,
+      });
+    }
+    return out;
+  }, [jobs]);
+
+  const hasMonthlyData = monthly.some((m) => m.count > 0);
+
+  const exportMonthlyCsv = () => {
+    downloadCsv(
+      `stitchworks-monthly-${monthly[0].key}-to-${monthly[monthly.length - 1].key}.csv`,
+      ['Month', 'Jobs', 'Total Charged', 'Materials Cost', 'Net Profit', 'Hours', 'Effective $/Hour'],
+      monthly.map((m) => [
+        m.key,
+        m.count,
+        m.charged.toFixed(2),
+        m.materials.toFixed(2),
+        m.netProfit.toFixed(2),
+        m.hours.toFixed(1),
+        m.hours > 0 ? (m.netProfit / m.hours).toFixed(2) : '',
+      ]),
+    );
+  };
+
+  const exportSourceCsv = () => {
+    const totalJobs = bySource.reduce((s, r) => s + r.count, 0);
+    downloadCsv(
+      `stitchworks-sources-${range}.csv`,
+      ['Source', 'Jobs', 'Share of Jobs %', 'Total Charged', 'Net Profit'],
+      bySource.map((r) => [
+        r.label,
+        r.count,
+        totalJobs > 0 ? ((r.count / totalJobs) * 100).toFixed(1) : '0.0',
+        r.charged.toFixed(2),
+        r.netProfit.toFixed(2),
+      ]),
+    );
+  };
+
   const taxSetAside = stats.netProfit > 0 ? stats.netProfit * TAX_SET_ASIDE_RATE : 0;
 
   return (
@@ -204,6 +273,34 @@ export function NumbersPage() {
             {/* Tax set-aside (R4) */}
             <TaxSetAsideCard amount={taxSetAside} />
 
+            {/* Monthly trend chart + CSV export */}
+            <section>
+              <div className="mb-2 flex flex-wrap items-center gap-2">
+                <div className="flex items-baseline gap-2">
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-700">
+                    Monthly Trend
+                  </h3>
+                  <span className="text-[11px] text-slate-400">· Last 12 months, all paid jobs</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={exportMonthlyCsv}
+                  className="ml-auto min-h-[36px] rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+                >
+                  Export CSV
+                </button>
+              </div>
+              <div className="rounded-lg border border-slate-200 bg-white p-3 sm:p-4">
+                {hasMonthlyData ? (
+                  <MonthlyTrendChart data={monthly} />
+                ) : (
+                  <p className="py-6 text-center text-sm text-slate-500">
+                    No paid jobs in the last 12 months yet.
+                  </p>
+                )}
+              </div>
+            </section>
+
             {/* By Category */}
             <BreakdownTable
               title="By Category"
@@ -220,6 +317,35 @@ export function NumbersPage() {
               ])}
               emptyMessage="No paid jobs in this range yet."
             />
+
+            {/* Where customers came from — visual ranking above the detail table */}
+            <section>
+              <div className="mb-2 flex flex-wrap items-center gap-2">
+                <div className="flex items-baseline gap-2">
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-700">
+                    Where They Came From
+                  </h3>
+                  <span className="text-[11px] text-slate-400">· {RANGE_LABELS[range]}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={exportSourceCsv}
+                  disabled={bySource.length === 0}
+                  className="ml-auto min-h-[36px] rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-40"
+                >
+                  Export CSV
+                </button>
+              </div>
+              <div className="rounded-lg border border-slate-200 bg-white p-3 sm:p-4">
+                {bySource.length === 0 ? (
+                  <p className="py-6 text-center text-sm text-slate-500">
+                    No paid jobs in this range yet.
+                  </p>
+                ) : (
+                  <SourceBreakdownChart rows={bySource} />
+                )}
+              </div>
+            </section>
 
             {/* By Source */}
             <BreakdownTable
