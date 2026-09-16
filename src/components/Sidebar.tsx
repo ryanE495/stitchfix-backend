@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useSidebar } from '../lib/sidebarContext';
+import { useAuth } from '../lib/authContext';
 
 const NAV_ITEMS: { to: string; label: string; end?: boolean; icon: ReactNode }[] = [
   {
@@ -25,6 +26,17 @@ const NAV_ITEMS: { to: string; label: string; end?: boolean; icon: ReactNode }[]
         <circle cx="9" cy="7" r="4" />
         <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
         <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      </svg>
+    ),
+  },
+  {
+    to: '/repairs',
+    label: 'Repairs',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+        <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+        <line x1="12" y1="22.08" x2="12" y2="12" />
       </svg>
     ),
   },
@@ -54,6 +66,7 @@ const NAV_ITEMS: { to: string; label: string; end?: boolean; icon: ReactNode }[]
 
 export function Sidebar() {
   const { open, setOpen, collapsed, setCollapsed } = useSidebar();
+  const { session, signOut } = useAuth();
 
   const widthClass = collapsed ? 'md:w-16' : 'md:w-60';
   const mobileTranslate = open ? 'translate-x-0' : '-translate-x-full';
@@ -144,14 +157,31 @@ export function Sidebar() {
           </ul>
         </nav>
 
-        {/* Footer (no auth — just a static brand strip) */}
-        {!collapsed && (
-          <div className="border-t border-slate-200 px-3 py-3">
-            <p className="text-[11px] text-slate-400">
-              Industrial sewing &amp; gear repair
+        {/* Footer — signed-in identity + sign out */}
+        <div className="border-t border-slate-200 px-2 py-2">
+          {!collapsed && (
+            <p className="truncate px-1 pb-1 text-[11px] text-slate-400">
+              {session?.user.email ?? 'Industrial sewing & gear repair'}
             </p>
-          </div>
-        )}
+          )}
+          <button
+            type="button"
+            onClick={signOut}
+            title={collapsed ? 'Sign out' : undefined}
+            className={`flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 ${
+              collapsed ? 'md:justify-center md:px-0' : ''
+            }`}
+          >
+            <span className="shrink-0">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+            </span>
+            {!collapsed && <span className="truncate">Sign out</span>}
+          </button>
+        </div>
       </aside>
     </>
   );

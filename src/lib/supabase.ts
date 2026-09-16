@@ -13,3 +13,5 @@ export const supabase = createClient(url, anonKey);
 
 export const PHOTOS_BUCKET = 'stitchworks-job-photos';
 export const PORTFOLIO_IMAGES_BUCKET = 'stitchworks-portfolio-images';
+// Private bucket — images are read through createSignedUrl(), not getPublicUrl().
+export const REPAIR_PHOTOS_BUCKET = 'repair-photos';

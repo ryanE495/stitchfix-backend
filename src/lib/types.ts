@@ -201,3 +201,161 @@ export const COMMON_PORTFOLIO_TAGS = [
   'Grommets',
   'Zipper Replacement',
 ];
+
+// ── Mail-in repair requests ────────────────────────────────────────────
+// Backed by public.repair_requests / public.repair_photos, which are fed by
+// the public intake form. Column checks live in the DB; the unions below
+// mirror them exactly — keep them in sync or inserts will 400.
+
+export type RepairStatus =
+  | 'new'
+  | 'contacted'
+  | 'quoted'
+  | 'approved'
+  | 'in_shop'
+  | 'shipped_back'
+  | 'closed'
+  | 'declined';
+
+export const REPAIR_STATUS_ORDER: RepairStatus[] = [
+  'new',
+  'contacted',
+  'quoted',
+  'approved',
+  'in_shop',
+  'shipped_back',
+  'closed',
+  'declined',
+];
+
+export const REPAIR_STATUS_LABELS: Record<RepairStatus, string> = {
+  new: 'New',
+  contacted: 'Contacted',
+  quoted: 'Quoted',
+  approved: 'Approved',
+  in_shop: 'In Shop',
+  shipped_back: 'Shipped Back',
+  closed: 'Closed',
+  declined: 'Declined',
+};
+
+/** Tailwind classes for the status pill, warm → cool as the job progresses. */
+export const REPAIR_STATUS_TONES: Record<RepairStatus, string> = {
+  new: 'bg-rust-100 text-rust-800',
+  contacted: 'bg-amber-100 text-amber-800',
+  quoted: 'bg-sky-100 text-sky-800',
+  approved: 'bg-indigo-100 text-indigo-800',
+  in_shop: 'bg-brand-100 text-brand-800',
+  shipped_back: 'bg-brand-200 text-brand-900',
+  closed: 'bg-slate-200 text-slate-700',
+  declined: 'bg-slate-100 text-slate-500',
+};
+
+export type RepairCategory = 'tent' | 'shade' | 'seat' | 'other';
+
+export const REPAIR_CATEGORIES: RepairCategory[] = ['tent', 'shade', 'seat', 'other'];
+
+export const REPAIR_CATEGORY_LABELS: Record<RepairCategory, string> = {
+  tent: 'Tent',
+  shade: 'Shade',
+  seat: 'Seat',
+  other: 'Other',
+};
+
+export type IfUnrepairable = 'return' | 'dispose';
+
+export const IF_UNREPAIRABLE_OPTIONS: IfUnrepairable[] = ['return', 'dispose'];
+
+export const IF_UNREPAIRABLE_LABELS: Record<IfUnrepairable, string> = {
+  return: 'Ship it back',
+  dispose: 'Dispose of it',
+};
+
+export type RepairContactMethod = 'phone' | 'email';
+
+export const REPAIR_CONTACT_METHODS: RepairContactMethod[] = ['phone', 'email'];
+
+export const REPAIR_CONTACT_METHOD_LABELS: Record<RepairContactMethod, string> = {
+  phone: 'Phone',
+  email: 'Email',
+};
+
+export type EstimateSource = 'table' | 'easypost' | 'shippo';
+
+export const ESTIMATE_SOURCES: EstimateSource[] = ['table', 'easypost', 'shippo'];
+
+export const ESTIMATE_SOURCE_LABELS: Record<EstimateSource, string> = {
+  table: 'Rate table',
+  easypost: 'EasyPost',
+  shippo: 'Shippo',
+};
+
+/** repair_photos.slot — one photo per slot per request (DB unique constraint). */
+export type RepairPhotoSlot = 'full' | 'damage' | 'tag';
+
+export const REPAIR_PHOTO_SLOTS: RepairPhotoSlot[] = ['full', 'damage', 'tag'];
+
+export const REPAIR_PHOTO_SLOT_LABELS: Record<RepairPhotoSlot, string> = {
+  full: 'Full Item',
+  damage: 'Damage Close-up',
+  tag: 'Care Tag',
+};
+
+export const COMMON_DAMAGE_TYPES = [
+  'Tear',
+  'Hole',
+  'Seam Failure',
+  'Zipper',
+  'Broken Buckle',
+  'Water Damage',
+  'UV Degradation',
+  'Mildew',
+  'Abrasion',
+  'Missing Hardware',
+];
+
+export interface RepairRequest {
+  id: string;
+  request_number: string;
+  created_at: string;
+  status: RepairStatus;
+  category: RepairCategory | null;
+  item_details: Record<string, unknown> | null;
+  damage_types: string[] | null;
+  damage_notes: string | null;
+  replacement_value: number | null;
+  spend_ceiling: number | null;
+  if_unrepairable: IfUnrepairable | null;
+  clean_dry_confirmed: boolean | null;
+  ship_zip: string | null;
+  ship_residential: boolean | null;
+  box_length: number | null;
+  box_width: number | null;
+  box_height: number | null;
+  box_weight: number | null;
+  billable_weight: number | null;
+  repair_estimate_low: number | null;
+  repair_estimate_high: number | null;
+  shipping_estimate_low: number | null;
+  shipping_estimate_high: number | null;
+  estimate_source: EstimateSource | null;
+  timing_preference: string | null;
+  contact_name: string;
+  contact_phone: string;
+  contact_email: string;
+  contact_method: RepairContactMethod | null;
+  contact_best_time: string | null;
+  referral_source: string | null;
+  referral_detail: string | null;
+  raw_payload: Record<string, unknown>;
+  internal_notes: string | null;
+  client_submission_id: string | null;
+}
+
+export interface RepairPhoto {
+  id: string;
+  request_id: string;
+  slot: RepairPhotoSlot;
+  storage_path: string;
+  created_at: string;
+}

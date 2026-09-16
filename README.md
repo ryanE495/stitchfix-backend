@@ -8,12 +8,36 @@ TanStack Query, dnd-kit, React Router, deployed on Netlify.
 
 ## Access model
 
-**No login.** The app is gated only by obscurity of the deploy URL. The
-Supabase anon key sits in the JS bundle, and the database policies allow
-anon read/write to the Stitchworks tables. Don't share the URL publicly.
+**Email + password login** (Supabase Auth), single operator. `AuthGate`
+wraps the whole app, so no query fires while signed out. The real
+enforcement is in the database: RLS restricts the admin tables to the
+`authenticated` role, so the anon key on its own reads nothing.
 
-To add a login back later: re-introduce magic-link auth and replace the
-`_open` RLS policies with email-gated ones. (See earlier git history.)
+The one account is created by hand in Supabase → Authentication → Users.
+There is no sign-up or password-reset link in the UI — reset the password
+from that same dashboard page.
+
+### What is still anonymous, on purpose
+
+Head Water is a **shared** Supabase project; other public sites read from it
+with the same anon key. These stay anon-readable (published content, no PII):
+
+- `blog_posts`, `portfolio_items`, `images` — public marketing site
+- `mwmw_*` — MWMW site
+- `notary_solutions_blog` — notary site
+- `stitchworks_portfolio_items` — the public Astro portfolio, but **only
+  rows with `status = 'published'`**; drafts are no longer visible anonymously
+
+`repair_requests` / `repair_photos` grant anon `INSERT` **only**, so the
+public mail-in intake form can still file a submission without being able to
+read a single existing one.
+
+Caveat: the `stitchworks-job-photos` bucket is still `public = true`, and
+`stitchworks_job_photos.photo_url` stores public URLs. Existing photos remain
+reachable by direct link. Making the bucket private would invalidate every
+stored `photo_url`, so it's left as a deliberate follow-up.
+
+See `migrations/011_require_auth_for_admin_tables.sql`.
 
 ## Local setup
 
@@ -24,7 +48,7 @@ npm run dev                  # http://localhost:3000
 ```
 
 The dev server is pinned to port **3000** to match the default Supabase
-`site_url`. (No login flow uses it now, but it's the project convention.)
+`site_url`, which matters for auth redirects.
 
 ### Environment variables
 
@@ -45,6 +69,10 @@ The migration creates:
 - Enums: `stitchworks_contact_source`, `stitchworks_job_status`
 - A public storage bucket: `stitchworks-job-photos`
 - Open RLS policies (anon read/write) on the 3 tables + the bucket
+
+3. **Apply the numbered migrations** in `migrations/` in order. These layer
+   on top of the base schema; `011` is the one that replaces those open
+   policies with login-gated ones, so don't stop before it.
 
 ## Deploy to Netlify
 
