@@ -85,6 +85,8 @@ export interface Job {
   review_requested_at: string | null;
   payment_method: PaymentMethod | null;
   category: JobCategory | null;
+  /** Set when the job came from a Facebook group (migration 013). */
+  fb_group_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -358,4 +360,187 @@ export interface RepairPhoto {
   slot: RepairPhotoSlot;
   storage_path: string;
   created_at: string;
+}
+
+// ── Weekly planner ─────────────────────────────────────────────────────
+// Backed by stitchworks_tasks / _recurring_tasks / _blocked_days.
+// Weekday numbers are 0=Sunday..6=Saturday (JS getDay + Postgres dow),
+// even though the board renders Mon-first.
+
+export type TaskType = 'bench' | 'business' | 'content' | 'admin';
+
+export const TASK_TYPES: TaskType[] = ['bench', 'business', 'content', 'admin'];
+
+export const TASK_TYPE_LABELS: Record<TaskType, string> = {
+  bench: 'Bench',
+  business: 'Business',
+  content: 'Content',
+  admin: 'Admin',
+};
+
+/** Card accent + chip colors, one hue per type. */
+export const TASK_TYPE_TONES: Record<TaskType, { chip: string; bar: string }> = {
+  bench:    { chip: 'bg-brand-100 text-brand-800', bar: 'bg-brand-500' },
+  business: { chip: 'bg-sky-100 text-sky-800',     bar: 'bg-sky-500' },
+  content:  { chip: 'bg-rust-100 text-rust-800',   bar: 'bg-rust-500' },
+  admin:    { chip: 'bg-slate-200 text-slate-700', bar: 'bg-slate-400' },
+};
+
+export type TaskSource = 'manual' | 'auto' | 'recurring';
+
+/** Identifies which automation rule created a task, for dedupe. */
+export type AutoRule =
+  | 'awaiting_dropoff_stale'
+  | 'quote_followup'
+  | 'pickup_reminder'
+  | 'lost_reengage'
+  // Outreach (migration 013). These carry fb_rotation / fb_group_id instead
+  // of job_id, and dedupe through their own partial unique indexes.
+  | 'fb_rotation'
+  | 'fb_group_offday';
+
+export interface Task {
+  id: string;
+  title: string;
+  notes: string | null;
+  type: TaskType;
+  scheduled_date: string; // YYYY-MM-DD
+  estimated_minutes: number | null;
+  completed_at: string | null;
+  rollover_count: number;
+  source: TaskSource;
+  job_id: string | null;
+  auto_rule: AutoRule | null;
+  recurring_task_id: string | null;
+  fb_rotation: 'A' | 'B' | null;
+  fb_group_id: string | null;
+  created_at: string;
+}
+
+/** Task joined to its job's customer name, for the linked-job line on a card. */
+export type TaskWithJob = Task & {
+  job: { id: string; item_description: string; customer: { name: string } | null } | null;
+};
+
+export interface RecurringTask {
+  id: string;
+  title: string;
+  type: TaskType;
+  weekday: number;
+  estimated_minutes: number | null;
+  active: boolean;
+  created_at: string;
+}
+
+export interface BlockedDay {
+  id: string;
+  weekday: number | null;
+  date: string | null;
+  label: string;
+  created_at: string;
+}
+
+export const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+export const WEEKDAY_LONG = [
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+];
+
+/** Weekly target for billable bench work, in hours. */
+export const BENCH_HOURS_TARGET = 6;
+
+/** A task rolled this many times is considered stuck. */
+export const STUCK_ROLLOVER_THRESHOLD = 3;
+
+// ── Facebook group outreach ────────────────────────────────────────────
+
+export type FbRegion = 'ouray_montrose_san_miguel' | 'grand_junction' | 'other';
+
+export const FB_REGIONS: FbRegion[] = [
+  'ouray_montrose_san_miguel',
+  'grand_junction',
+  'other',
+];
+
+export const FB_REGION_LABELS: Record<FbRegion, string> = {
+  ouray_montrose_san_miguel: 'Ouray / Montrose / San Miguel',
+  grand_junction: 'Grand Junction',
+  other: 'Other',
+};
+
+export type FbRotation = 'A' | 'B';
+export const FB_ROTATIONS: FbRotation[] = ['A', 'B'];
+
+/** Rotation A posts Monday, rotation B posts Thursday. */
+export const ROTATION_WEEKDAY: Record<FbRotation, number> = { A: 1, B: 4 };
+
+export type FbGroupStatus = 'active' | 'paused' | 'removed';
+export const FB_GROUP_STATUSES: FbGroupStatus[] = ['active', 'paused', 'removed'];
+export const FB_GROUP_STATUS_LABELS: Record<FbGroupStatus, string> = {
+  active: 'Active',
+  paused: 'Paused',
+  removed: 'Removed',
+};
+
+export type TemplateCategory = 'tent' | 'awning' | 'mail_in' | 'general';
+export const TEMPLATE_CATEGORIES: TemplateCategory[] = [
+  'tent',
+  'awning',
+  'mail_in',
+  'general',
+];
+export const TEMPLATE_CATEGORY_LABELS: Record<TemplateCategory, string> = {
+  tent: 'Tent',
+  awning: 'Awning',
+  mail_in: 'Mail-in',
+  general: 'General',
+};
+
+/** Days-since-last-post above this is flagged on the Groups page. */
+export const STALE_GROUP_DAYS = 14;
+
+export interface FbGroup {
+  id: string;
+  name: string;
+  url: string;
+  region: FbRegion;
+  allowed_weekdays: number[];
+  max_posts_per_week: number | null;
+  rotation: FbRotation;
+  status: FbGroupStatus;
+  rule_notes: string | null;
+  created_at: string;
+}
+
+export interface FbGroupPost {
+  id: string;
+  group_id: string;
+  posted_at: string;
+  template_id: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
+export interface PostTemplate {
+  id: string;
+  name: string;
+  body: string;
+  category: TemplateCategory;
+  active: boolean;
+  created_at: string;
+}
+
+/** A group plus the derived numbers the Groups page ranks on. */
+export interface FbGroupStats {
+  group: FbGroup;
+  lastPostedAt: string | null;
+  daysSince: number | null;
+  postsThisWeek: number;
+  jobsSourced: number;
+  revenueSourced: number;
 }

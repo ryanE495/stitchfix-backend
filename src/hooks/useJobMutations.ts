@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import type { Job, JobStatus, JobWithCustomer } from '../lib/types';
 import { jobsQueryKey } from './useJobs';
+import { todayIso } from '../lib/dates';
 
 type JobPatch = Partial<
   Pick<
@@ -77,7 +78,7 @@ type AdvanceJob = Pick<
 export function useAdvanceStatus() {
   const update = useUpdateJob();
   return (job: AdvanceJob, next: JobStatus) => {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayIso();
     const patch: JobPatch = { status: next };
     if (next === 'in_shop' && !job.date_received) {
       patch.date_received = today;

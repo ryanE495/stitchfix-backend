@@ -6,6 +6,8 @@ import { CustomersPage } from './pages/CustomersPage';
 import { CustomerDetailPage } from './pages/CustomerDetailPage';
 import { NumbersPage } from './pages/NumbersPage';
 import { RepairRequestsPage } from './pages/RepairRequestsPage';
+import { PlannerPage } from './pages/PlannerPage';
+import { GroupsPage } from './pages/GroupsPage';
 import { PortfolioListPage } from './pages/PortfolioListPage';
 
 export default function App() {
@@ -17,6 +19,8 @@ export default function App() {
             <Route path="/" element={<KanbanPage />} />
             <Route path="/customers" element={<CustomersPage />} />
             <Route path="/customers/:id" element={<CustomerDetailPage />} />
+            <Route path="/planner" element={<PlannerPage />} />
+            <Route path="/groups" element={<GroupsPage />} />
             <Route path="/repairs" element={<RepairRequestsPage />} />
             <Route path="/numbers" element={<NumbersPage />} />
             <Route path="/portfolio" element={<PortfolioListPage />} />

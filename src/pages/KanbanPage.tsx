@@ -28,6 +28,7 @@ import { NewJobModal } from '../components/NewJobModal';
 import { PipelineSummary } from '../components/PipelineSummary';
 import { useIsDesktop } from '../hooks/useIsDesktop';
 import { useLocalStorage } from '../hooks/useLocalStorage';
+import { todayIso } from '../lib/dates';
 
 type SourceFilter = ContactSource | 'all';
 const FILTER_STORAGE_KEY = 'stitchworks.kanban.sourceFilter';
@@ -106,7 +107,7 @@ export function KanbanPage() {
     }
     if (!target || target === activeJ.status) return;
 
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayIso();
     const patch: Parameters<typeof update.mutateAsync>[0]['patch'] = { status: target };
     if (target === 'in_shop' && !activeJ.date_received) patch.date_received = today;
     if (target === 'complete_awaiting_pickup' && !activeJ.date_completed)
