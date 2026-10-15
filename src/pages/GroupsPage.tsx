@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { TopNav } from '../components/TopNav';
 import { TemplatePerformance } from '../components/TemplatePerformance';
+import { AddGroupModal } from '../components/AddGroupModal';
 import { useJobs } from '../hooks/useJobs';
 import {
   useFbGroupPosts,
@@ -51,6 +52,7 @@ export function GroupsPage() {
   const [region, setRegion] = useState<RegionFilter>('all');
   const [showRemoved, setShowRemoved] = useState(false);
   const [pageError, setPageError] = useState<string | null>(null);
+  const [adding, setAdding] = useState(false);
 
   const today = toIsoDate(new Date());
   const weekStart = startOfWeek(today);
@@ -176,14 +178,23 @@ export function GroupsPage() {
           </div>
         }
         action={
-          <button
-            type="button"
-            onClick={balance}
-            disabled={setRotations.isPending}
-            className="min-h-[44px] rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
-          >
-            {setRotations.isPending ? 'Balancing…' : 'Auto-balance A/B'}
-          </button>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={balance}
+              disabled={setRotations.isPending}
+              className="min-h-[44px] rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+            >
+              {setRotations.isPending ? 'Balancing…' : 'Auto-balance A/B'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setAdding(true)}
+              className="min-h-[44px] rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-800 active:scale-[0.99]"
+            >
+              + Add group
+            </button>
+          </div>
         }
       />
 
@@ -381,6 +392,8 @@ export function GroupsPage() {
           <TemplatePerformance />
         </div>
       </main>
+
+      {adding && <AddGroupModal onClose={() => setAdding(false)} />}
     </div>
   );
 }

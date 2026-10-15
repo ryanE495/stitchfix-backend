@@ -60,6 +60,66 @@ export function usePostTemplates() {
   });
 }
 
+/**
+ * Add one group by hand. If `lastPostedDay` is given, a seed post is logged
+ * on that day so "Last posted" / "Days since" are right from the start.
+ */
+export function useCreateFbGroup() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: {
+      group: Pick<
+        FbGroup,
+        | 'name'
+        | 'url'
+        | 'region'
+        | 'allowed_weekdays'
+        | 'max_posts_per_week'
+        | 'rotation'
+        | 'rule_notes'
+      >;
+      lastPostedDay: string | null;
+    }) => {
+      const { data, error } = await supabase
+        .from('stitchworks_fb_groups')
+        .insert({ ...input.group, status: 'active' })
+        .select('id')
+        .single();
+      if (error) {
+        // Unique URL: say which existing group it is rather than a raw 23505.
+        if (error.code === '23505') {
+          const { data: dupe } = await supabase
+            .from('stitchworks_fb_groups')
+            .select('name, status')
+            .eq('url', input.group.url)
+            .maybeSingle();
+          throw new Error(
+            dupe
+              ? `That group is already in your list as "${dupe.name}"${
+                  dupe.status !== 'active' ? ` (${dupe.status})` : ''
+                }.`
+              : 'That group URL is already in your list.',
+          );
+        }
+        throw error;
+      }
+
+      if (input.lastPostedDay) {
+        const { error: postErr } = await supabase.from('stitchworks_fb_group_posts').insert({
+          group_id: data.id,
+          posted_at: noonLocalIso(input.lastPostedDay),
+          notes: 'Last posted date entered when the group was added',
+        });
+        if (postErr) throw postErr;
+      }
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: fbGroupsKey });
+      qc.invalidateQueries({ queryKey: fbPostsKey });
+    },
+  });
+}
+
 export function useUpdateFbGroup() {
   const qc = useQueryClient();
   return useMutation({
